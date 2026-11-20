@@ -12,6 +12,7 @@ import Darwin
 public final class ProcessTransport: UCITransport, @unchecked Sendable {
   public let executable: URL
   public let arguments: [String]
+  /// Native macOS only (Mac Catalyst has no `posix_spawn_file_actions_addchdir_np`).
   public let workingDirectory: URL?
   public var capabilities: EngineTransportCapabilities { .externalProcess }
 
@@ -57,9 +58,11 @@ public final class ProcessTransport: UCITransport, @unchecked Sendable {
     posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO)
     posix_spawn_file_actions_adddup2(&actions, output[1], STDERR_FILENO)
     for fd in [input[0], input[1], output[0], output[1]] { posix_spawn_file_actions_addclose(&actions, fd) }
+    #if os(macOS) && !targetEnvironment(macCatalyst)
     if let workingDirectory {
       posix_spawn_file_actions_addchdir_np(&actions, workingDirectory.path)
     }
+    #endif
 
     var attributes: posix_spawnattr_t?
     posix_spawnattr_init(&attributes)
