@@ -558,10 +558,14 @@ actor EngineRuntime {
           if case let .setoption(id, value) = command { try validateRawOption(id: id, value: value) }
           try enqueue(command, sessionID: sessionID)
         }
-        try validateRawOption(id: "Threads", value: String(configuration.coreCount))
-        try enqueue(.setoption(id: "Threads", value: String(configuration.coreCount)), sessionID: sessionID)
-        try validateRawOption(id: "MultiPV", value: String(configuration.multipv))
-        try enqueue(.setoption(id: "MultiPV", value: String(configuration.multipv)), sessionID: sessionID)
+        // Engines advertise different limits (a single-threaded WebAssembly build allows one thread): clamp to
+        // the advertised maximum, and skip options the engine does not have.
+        for (name, requested) in [("Threads", configuration.coreCount), ("MultiPV", configuration.multipv)] {
+          guard let option = options[name.lowercased()] else { continue }
+          let value = clamped(requested, to: option)
+          try validateRawOption(id: name, value: String(value))
+          try enqueue(.setoption(id: name, value: String(value)), sessionID: sessionID)
+        }
         handshake = .ready
         try enqueue(.isready, sessionID: sessionID)
       } catch { failSession(engineError(error), sessionID: sessionID) }
@@ -589,6 +593,13 @@ actor EngineRuntime {
       finishWaiters(&searchWaiters)
     default: break
     }
+  }
+
+  private func clamped(_ value: Int, to option: EngineResponse.Option) -> Int {
+    var result = value
+    if let max = option.max { result = Swift.min(result, max) }
+    if let min = option.min { result = Swift.max(result, min) }
+    return result
   }
 
   private func enqueue(_ command: EngineCommand, sessionID: UUID,

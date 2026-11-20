@@ -20,7 +20,7 @@ final class ScriptedTransport: UCITransport, @unchecked Sendable {
     let mailbox = lock.withLock { sent.append(command); return self.mailbox }
     switch command {
     case "uci":
-      mailbox?.appendLines("id name Scripted 1\nid author Test\noption name Threads type spin default 1 min 1 max 1024\noption name MultiPV type spin default 1 min 1 max 4\noption name UCI_ShowWDL type check default false\nuciok")
+      mailbox?.appendLines("id name Scripted 1\nid author Test\noption name Threads type spin default 1 min 1 max 8\noption name MultiPV type spin default 1 min 1 max 4\noption name UCI_ShowWDL type check default false\nuciok")
     case "isready":
       mailbox?.append(.output("readyok"))
     case _ where command.hasPrefix("go"):
