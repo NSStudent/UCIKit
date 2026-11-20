@@ -555,7 +555,11 @@ actor EngineRuntime {
       setState(.configuring)
       do {
         for command in configuration.commands {
-          if case let .setoption(id, value) = command { try validateRawOption(id: id, value: value) }
+          if case let .setoption(id, value) = command {
+            // Startup options are best effort: engines differ, and one that lacks an option ignores it.
+            guard options[id.lowercased()] != nil else { continue }
+            try validateRawOption(id: id, value: value)
+          }
           try enqueue(command, sessionID: sessionID)
         }
         // Engines advertise different limits (a single-threaded WebAssembly build allows one thread): clamp to
