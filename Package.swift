@@ -18,6 +18,6 @@ let package = Package(
         .target(name: "UCIKitWeb", dependencies: ["UCIKit"]),
         // A separate engine program over pipes (macOS and Mac Catalyst; iOS cannot start processes).
         .target(name: "UCIKitProcess", dependencies: ["UCIKit"]),
-        .testTarget(name: "UCIKitTests", dependencies: ["UCIKit", "UCIKitProcess"]),
+        .testTarget(name: "UCIKitTests", dependencies: ["UCIKit", "UCIKitProcess", "UCIKitWeb"]),
     ]
 )
