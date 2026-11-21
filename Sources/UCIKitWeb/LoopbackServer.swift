@@ -6,7 +6,7 @@ import Foundation
 ///
 /// Every response carries COOP/COEP/CORP: without cross-origin isolation WebKit gives no `SharedArrayBuffer`
 /// and multi-threaded engines cannot start. (A `WKURLSchemeHandler` isolates the page but still gives no
-/// `SharedArrayBuffer`; `NWListener` did not accept connections inside an iOS app: spike S4, 20 Nov 2026.)
+/// `SharedArrayBuffer`, and in our tests `NWListener` did not accept connections inside an iOS app.)
 /// Paths live under a random token so other local clients cannot guess them.
 final class LoopbackServer: @unchecked Sendable {
   let token = UUID().uuidString.lowercased()
